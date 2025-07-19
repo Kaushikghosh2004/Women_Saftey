@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet Map with Google Places API</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 600px;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="map"></div>
+
+    <!-- Load Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <!-- Load Google Places API (replace YOUR_GOOGLE_PLACES_API_KEY with your actual key) -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_PLACES_API_KEY&libraries=places"></script>
+
+    <script>
+        // Initialize the map
+        var map = L.map('map').setView([51.505, -0.09], 13);
+
+        // Add OpenStreetMap base layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Use the Geolocation API to get the current location
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function (position) {
+                var lat = position.coords.latitude;
+                var lon = position.coords.longitude;
+                var accuracy = position.coords.accuracy;
+
+                // Update map to center at current location
+                map.setView([lat, lon], 13);
+
+                // Add a marker for the current location
+                L.marker([lat, lon]).addTo(map)
+                    .bindPopup("You are here!");
+
+                // Call Google Places API to get nearby hospitals, police stations, and railway stations
+                var service = new google.maps.places.PlacesService(document.createElement('div'));
+
+                // Define search options for each category
+                var searchOptions = {
+                    location: new google.maps.LatLng(lat, lon),
+                    radius: 5000, // Radius in meters
+                    types: ['hospital', 'police', 'train_station']
+                };
+
+                // Perform the search
+                service.nearbySearch(searchOptions, function (results, status) {
+                    if (status === google.maps.places.PlacesServiceStatus.OK) {
+                        results.forEach(function (place) {
+                            var placeLocation = [place.geometry.location.lat(), place.geometry.location.lng()];
+
+                            // Choose an icon based on place type
+                            var placeIcon;
+                            if (place.types.includes("hospital")) {
+                                placeIcon = 'https://example.com/hospital-icon.png'; // Replace with actual URL
+                            } else if (place.types.includes("police")) {
+                                placeIcon = 'https://example.com/police-icon.png'; // Replace with actual URL
+                            } else if (place.types.includes("train_station")) {
+                                placeIcon = 'https://example.com/railway-icon.png'; // Replace with actual URL
+                            }
+
+                            // Add a marker for each place
+                            var marker = L.marker(placeLocation, {
+                                icon: L.icon({
+                                    iconUrl: placeIcon,
+                                    iconSize: [32, 32]
+                                })
+                            }).addTo(map);
+
+                            // Bind popup with place details
+                            marker.bindPopup(`<b>${place.name}</b><br>Type: ${place.types[0]}<br>Address: ${place.vicinity}`);
+                        });
+                    }
+                });
+
+            }, function() {
+                alert("Unable to retrieve your location.");
+            });
+        } else {
+            alert("Geolocation is not supported by this browser.");
+        }
+
+    </script>
+</body>
+
+</html>
