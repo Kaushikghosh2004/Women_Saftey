@@ -1,4 +1,4 @@
-+# Women Safety Analytics
+# Women Safety Analytics
 
 An interactive, Flask-powered web application designed to enhance personal safety for women. This platform integrates real-time geolocation tracking, video capturing with automated person detection, SOS alert dispatching (with audio recording attachments), local safety heuristics, and an interactive chatbot for instant Q&A.
 
